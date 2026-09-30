@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Your LinkedIn Audit, Kandis</title>
+<style>
+  :root{
+    --paper:#FAF6F0;
+    --paper2:#F3EDE3;
+    --ink:#1C1714;
+    --ink2:#5B534B;
+    --line:#E4DCCF;
+    --pink:#E8457F;
+    --pink-soft:#FBE4EE;
+    --green:#1F6F4A;
+    --card:#FFFFFF;
+    --radius:18px;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    background:var(--paper);
+    color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.6;
+    font-size:16px;
+  }
+  .serif{font-family:Georgia,"Times New Roman",serif;}
+  .wrap{max-width:1080px;margin:0 auto;padding:0 24px;}
+
+  /* progress bar */
+  #progress{position:fixed;top:0;left:0;height:3px;width:0%;background:var(--pink);z-index:200;transition:width .15s linear;}
+
+  /* header */
+  header{
+    position:fixed;top:3px;left:0;right:0;z-index:100;
+    background:rgba(250,246,240,.92);backdrop-filter:blur(10px);
+    border-bottom:1px solid var(--line);
+  }
+  header .wrap{display:flex;align-items:center;justify-content:space-between;height:58px;}
+  .brand{font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink2);font-weight:600;}
+  .brand b{color:var(--pink);}
+  nav{display:flex;gap:4px;}
+  nav a{
+    font-size:13px;color:var(--ink2);text-decoration:none;padding:6px 10px;border-radius:99px;transition:.2s;
+  }
+  nav a:hover{background:var(--pink-soft);color:var(--ink);}
+  @media(max-width:820px){nav{display:none;}}
+
+  section{padding:88px 0;}
+  section.tight{padding:64px 0;}
+  .eyebrow{
+    display:inline-block;font-size:12px;letter-spacing:.16em;text-transform:uppercase;
+    color:var(--pink);font-weight:700;margin-bottom:16px;
+  }
+  h1,h2{font-family:Georgia,serif;font-weight:600;line-height:1.15;letter-spacing:-.01em;}
+  h1{font-size:clamp(34px,5.4vw,58px);max-width:820px;}
+  h2{font-size:clamp(26px,3.6vw,40px);max-width:720px;margin-bottom:14px;}
+  .sub{color:var(--ink2);font-size:17px;max-width:640px;margin-top:16px;}
+  .rule{width:56px;height:3px;background:var(--pink);border-radius:99px;margin:28px 0;}
+
+  .reveal{opacity:0;transform:translateY(22px);transition:opacity .7s ease,transform .7s ease;}
+  .reveal.in{opacity:1;transform:none;}
+  .d1{transition-delay:.08s}.d2{transition-delay:.16s}.d3{transition-delay:.24s}.d4{transition-delay:.32s}
+
+  /* hero */
+  #hero{padding:150px 0 72px;background:linear-gradient(180deg,#FFF 0%,var(--paper) 100%);}
+  .hero-tag{
+    display:inline-flex;align-items:center;gap:8px;background:var(--pink-soft);color:var(--pink);
+    font-size:12.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;
+    padding:7px 14px;border-radius:99px;margin-bottom:22px;
+  }
+  .analyzed{display:flex;flex-wrap:wrap;gap:8px;margin-top:26px;}
+  .analyzed span{
+    font-size:13px;color:var(--ink2);border:1px solid var(--line);background:#fff;
+    padding:6px 13px;border-radius:99px;
+  }
+  .stats{
+    display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;margin-top:56px;
+  }
+  .stat{
+    background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:22px 24px;
+  }
+  .stat .n{font-family:Georgia,serif;font-size:32px;color:var(--pink);font-weight:600;line-height:1.1;}
+  .stat .l{font-size:13.5px;color:var(--ink2);margin-top:6px;}
+
+  /* generic cards */
+  .grid3{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:18px;margin-top:40px;}
+  .card{
+    background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:28px;
+    transition:transform .25s ease,box-shadow .25s ease;
+  }
+  .card:hover{transform:translateY(-3px);box-shadow:0 14px 34px rgba(28,23,20,.07);}
+  .card .num{
+    font-family:Georgia,serif;font-size:15px;color:var(--pink);font-weight:700;margin-bottom:12px;
+  }
+  .card h3{font-size:18px;margin-bottom:10px;line-height:1.35;}
+  .card p{font-size:14.5px;color:var(--ink2);}
+  .card .why{margin-top:14px;padding-top:14px;border-top:1px dashed var(--line);font-size:13.5px;color:var(--ink);}
+  .card .why b{color:var(--pink);font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;display:block;margin-bottom:4px;}
+
+  /* flow */
+  .flow{display:flex;flex-direction:column;gap:14px;margin-top:40px;max-width:760px;}
+  .flow-row{display:grid;grid-template-columns:150px 1fr;gap:20px;align-items:start;background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:24px 26px;}
+  .flow-row .tag{font-size:11.5px;letter-spacing:.14em;text-transform:uppercase;font-weight:700;padding-top:3px;}
+  .tag.now{color:var(--ink2);}
+  .tag.prob{color:#B4531F;}
+  .tag.new{color:var(--green);}
+  .flow-row .txt{font-size:16px;}
+  .arrow{align-self:center;color:var(--pink);font-size:20px;margin:-4px 0 -4px 66px;}
+  @media(max-width:640px){.flow-row{grid-template-columns:1fr;gap:8px;}.arrow{margin-left:24px;}}
+
+  /* before after rows */
+  .ba{margin-top:40px;border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;background:var(--card);}
+  .ba-row{display:grid;grid-template-columns:170px 1fr 34px 1fr;}
+  .ba-row:not(:last-child){border-bottom:1px solid var(--line);}
+  .ba-row>div{padding:20px 22px;}
+  .ba-row .k{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink2);font-weight:700;background:var(--paper2);display:flex;align-items:center;}
+  .ba-row .b{font-size:14.5px;color:#8A7F74;}
+  .ba-row .mid{display:flex;align-items:center;justify-content:center;color:var(--pink);font-weight:700;background:var(--paper2);}
+  .ba-row .a{font-size:14.5px;color:var(--ink);font-weight:500;}
+  @media(max-width:760px){
+    .ba-row{grid-template-columns:1fr;}
+    .ba-row .mid{padding:0 22px 6px;justify-content:flex-start;background:#fff;}
+    .ba-row .k{padding-bottom:4px;}
+  }
+
+  /* copyable */
+  .copybox{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:30px;margin-top:28px;position:relative;}
+  .copybox .inner{white-space:pre-wrap;font-size:15px;line-height:1.75;color:var(--ink);}
+  .copybtn{
+    display:inline-flex;align-items:center;gap:7px;border:none;cursor:pointer;
+    background:var(--ink);color:#fff;font-size:13px;font-weight:600;
+    padding:9px 18px;border-radius:99px;transition:.2s;margin-top:20px;
+  }
+  .copybtn:hover{background:var(--pink);}
+  .copybtn.done{background:var(--green);}
+  .copyhead{display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap;}
+  .copyhead .lbl{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink2);font-weight:700;}
+
+  /* headlines */
+  .hl{
+    background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:26px;margin-top:16px;
+    display:grid;grid-template-columns:44px 1fr;gap:18px;transition:transform .2s ease,box-shadow .2s ease;
+  }
+  .hl:hover{transform:translateY(-2px);box-shadow:0 12px 28px rgba(28,23,20,.07);}
+  .hl .idx{
+    width:44px;height:44px;border-radius:50%;background:var(--paper2);color:var(--ink);
+    display:flex;align-items:center;justify-content:center;font-family:Georgia,serif;font-weight:700;font-size:18px;
+  }
+  .hl.reco{border:2px solid var(--pink);}
+  .hl.reco .idx{background:var(--pink);color:#fff;}
+  .hl .reco-badge{
+    display:inline-block;font-size:11px;letter-spacing:.12em;text-transform:uppercase;font-weight:700;
+    color:var(--pink);background:var(--pink-soft);padding:4px 10px;border-radius:99px;margin-bottom:8px;
+  }
+  .hl .h-txt{font-size:16.5px;font-weight:600;line-height:1.5;}
+  .hl .h-idea{font-size:14px;color:var(--ink2);margin-top:10px;}
+  .hl .h-why{font-size:13.5px;margin-top:8px;color:var(--ink);}
+  .hl .h-why b{color:var(--pink);font-size:11px;letter-spacing:.1em;text-transform:uppercase;margin-right:6px;}
+
+  /* post */
+  .post-card{background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:34px;margin-top:28px;}
+  .post-body{white-space:pre-wrap;font-size:15.5px;line-height:1.8;}
+  .post-body .hl-line{color:var(--pink);font-weight:700;}
+
+  .themes{display:flex;flex-wrap:wrap;gap:10px;margin-top:24px;}
+  .theme{
+    background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 18px;font-size:14px;
+  }
+  .theme b{display:block;font-size:13px;}
+  .theme span{font-size:12.5px;color:var(--ink2);}
+
+  /* banner */
+  .banner-mock{
+    margin-top:28px;border-radius:var(--radius);overflow:hidden;border:1px solid var(--line);
+    aspect-ratio:4/1;position:relative;
+    background:linear-gradient(115deg,#161112 0%,#2A1B22 55%,#4A1630 100%);
+    display:flex;align-items:center;padding:0 6%;
+  }
+  .banner-mock .bm-kicker{font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:#F5A8C6;font-weight:700;margin-bottom:8px;}
+  .banner-mock .bm-main{font-family:Georgia,serif;color:#fff;font-size:clamp(16px,3.2vw,30px);line-height:1.25;font-weight:600;max-width:80%;}
+  .banner-mock .bm-main em{color:#F076A8;font-style:normal;}
+  .banner-mock .bm-sub{color:#CBB6BF;font-size:clamp(10px,1.4vw,14px);margin-top:10px;max-width:70%;}
+  @media(max-width:640px){.banner-mock{aspect-ratio:16/9;}}
+
+  /* gift */
+  .gift{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:16px;margin-top:36px;}
+  .gift .g{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:24px;}
+  .gift .g .tick{color:var(--green);font-weight:800;font-size:18px;}
+  .gift .g b{display:block;margin:8px 0 6px;font-size:15.5px;}
+  .gift .g span{font-size:13.5px;color:var(--ink2);}
+
+  /* CTA */
+  #cta{background:var(--ink);color:#F4EFE7;}
+  #cta h2{color:#fff;}
+  #cta .sub{color:#B9AEA2;}
+  .cta-card{
+    background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.12);border-radius:var(--radius);
+    padding:36px;margin-top:36px;
+  }
+  .cta-q{font-family:Georgia,serif;font-size:clamp(19px,2.6vw,26px);line-height:1.45;color:#fff;}
+  .cta-q em{color:#F076A8;font-style:normal;}
+  .cta-opts{display:flex;flex-wrap:wrap;gap:10px;margin-top:24px;}
+  .cta-opts span{border:1px solid rgba(255,255,255,.25);border-radius:99px;padding:8px 18px;font-size:14px;color:#E8DFD4;}
+
+  footer{background:#141010;color:#8D8177;padding:56px 0;font-size:13px;}
+  footer h4{color:#D9CFC4;font-size:12px;letter-spacing:.14em;text-transform:uppercase;margin-bottom:16px;}
+  footer .src{display:flex;flex-direction:column;gap:8px;}
+  footer a{color:#C99BB2;text-decoration:none;}
+  footer a:hover{text-decoration:underline;}
+  .foot-note{margin-top:36px;padding-top:24px;border-top:1px solid rgba(255,255,255,.08);font-size:13.5px;color:#B9AEA2;max-width:620px;line-height:1.7;}
+
+  .pill-note{
+    background:var(--pink-soft);border-radius:12px;padding:16px 20px;font-size:14px;color:#7A2447;margin-top:24px;max-width:720px;
+  }
+</style>
+<base target="_blank">
+</head>
+<body>
+
+<div id="progress"></div>
+
+<header>
+  <div class="wrap">
+    <div class="brand">Audit prepared for <b>Kandis Tagliabue</b></div>
+    <nav>
+      <a href="#findings">Findings</a>
+      <a href="#difference">Difference</a>
+      <a href="#headline">Headline</a>
+      <a href="#about">About</a>
+      <a href="#content">Content</a>
+      <a href="#banner">Banner</a>
+      <a href="#gift">Your gift</a>
+    </nav>
+  </div>
+</header>
+
+<!-- ============ HERO ============ -->
+<section id="hero">
+  <div class="wrap">
+    <div class="hero-tag">A private LinkedIn review, built for you</div>
+    <h1 class="reveal">Your best proof lives in a post.<br>Your profile should carry it.</h1>
+    <p class="sub reveal d1">I reviewed your LinkedIn profile, your recent posts, perks.global, Agentic Diaries, and your public footprint, the way a potential investor, partner, or hire would see it. Three things are making your strongest assets harder to see than they should be. I rebuilt the parts that matter.</p>
+    <div class="analyzed reveal d2">
+      <span>LinkedIn profile</span><span>14 recent posts</span><span>perks.global</span><span>Agentic Diaries</span><span>Public footprint</span>
+    </div>
+    <div class="stats reveal d3">
+      <div class="stat"><div class="n">698,572</div><div class="l">companies in the perks database</div></div>
+      <div class="stat"><div class="n">195</div><div class="l">benefit fields, every number sourced</div></div>
+      <div class="stat"><div class="n">218</div><div class="l">companies that publish a parental leave number</div></div>
+      <div class="stat"><div class="n">2 wks</div><div class="l">from 1,089 to 626,000 companies, built with agents</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FINDINGS ============ -->
+<section id="findings">
+  <div class="wrap">
+    <div class="eyebrow reveal">What I found</div>
+    <h2 class="reveal">Three places your profile undersells you</h2>
+    <p class="sub reveal d1">None of these are broken. Each one is a strong asset sitting one level below where a visitor would expect to find it.</p>
+    <div class="grid3">
+      <div class="card reveal">
+        <div class="num">01</div>
+        <h3>Your origin story is buried in a post</h3>
+        <p>The job with no HR department. Being told to use two weeks of your own vacation to recover after giving birth. That story is the real reason perks exists, and it currently lives in a single post instead of your profile, where every first-time visitor would see it.</p>
+        <div class="why"><b>Why it matters</b>People trust a problem the founder personally survived. It converts attention into belief faster than any dataset number.</div>
+      </div>
+      <div class="card reveal d1">
+        <div class="num">02</div>
+        <h3>Three ventures, no visible thread</h3>
+        <p>perks, Agentic Diaries, and BASE64 all sit on one profile, but nothing tells a visitor how they connect. A first-time reader has to do the work of figuring out who you are and what you actually do.</p>
+        <div class="why"><b>Why it matters</b>Perks is the clearest business. When it shares space without a thread, the profile reads as a list of projects instead of a founder with a point of view.</div>
+      </div>
+      <div class="card reveal d2">
+        <div class="num">03</div>
+        <h3>Your numbers prove scale, not relevance</h3>
+        <p>698,572 companies and 195 fields are impressive, but the headline never says who this is for or what decision it improves. The proof of scale is there; the promise is not.</p>
+        <div class="why"><b>Why it matters</b>A job seeker, a journalist, or a data buyer each needs one sentence telling them why your number matters to them.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ TRANSFORMATION ============ -->
+<section id="transformation" style="background:#FFF;">
+  <div class="wrap">
+    <div class="eyebrow reveal">The transformation</div>
+    <h2 class="reveal">What your profile says now, and what it could say</h2>
+    <div class="flow">
+      <div class="flow-row reveal">
+        <div class="tag now">Current</div>
+        <div class="txt">A founder with a large benefits database, plus two other projects.</div>
+      </div>
+      <div class="arrow">↓</div>
+      <div class="flow-row reveal">
+        <div class="tag prob">What is missed</div>
+        <div class="txt">The personal story behind the data, the audience it serves, and the fact that one person built this infrastructure with agents in weeks.</div>
+      </div>
+      <div class="arrow">↓</div>
+      <div class="flow-row reveal">
+        <div class="tag new">New</div>
+        <div class="txt">A founder who turned a personal experience into sourced infrastructure for one of the biggest decisions people make: accepting a job.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ DIFFERENCE ============ -->
+<section id="difference">
+  <div class="wrap">
+    <div class="eyebrow reveal">Your profile, repositioned</div>
+    <h2 class="reveal">Seven changes, side by side</h2>
+    <div class="ba reveal">
+      <div class="ba-row">
+        <div class="k">Positioning</div><div class="b">Owner of a large dataset</div><div class="mid">→</div><div class="a">Builder of decision infrastructure for job acceptors</div>
+      </div>
+      <div class="ba-row">
+        <div class="k">Headline</div><div class="b">Tagline plus numbers, no audience</div><div class="mid">→</div><div class="a">Who it helps, what it answers, proof it is real</div>
+      </div>
+      <div class="ba-row">
+        <div class="k">About</div><div class="b">Dense summary of ventures</div><div class="mid">→</div><div class="a">Origin story first, then the numbers that back it</div>
+      </div>
+      <div class="ba-row">
+        <div class="k">Proof</div><div class="b">Scattered across posts</div><div class="mid">→</div><div class="a">218 out of 698,572, two-week build, $50k IVF coverage, all in one place</div>
+      </div>
+      <div class="ba-row">
+        <div class="k">Message</div><div class="b">What we track</div><div class="mid">→</div><div class="a">What it means before you sign</div>
+      </div>
+      <div class="ba-row">
+        <div class="k">CTA</div><div class="b">None visible</div><div class="mid">→</div><div class="a">One clear next step: look up your next offer</div>
+      </div>
+      <div class="ba-row">
+        <div class="k">Banner</div><div class="b">No message</div><div class="mid">→</div><div class="a">One sentence, one number, one promise</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ HEADLINES ============ -->
+<section id="headline" style="background:#FFF;">
+  <div class="wrap">
+    <div class="eyebrow reveal">Your new headline</div>
+    <h2 class="reveal">Five options. Each one paste-ready.</h2>
+    <p class="sub reveal d1">Your current headline has a strong tagline, but no audience and no reason to click. These keep your voice and add the missing pieces.</p>
+
+    <div class="hl reveal">
+      <div class="idx">1</div>
+      <div>
+        <div class="h-txt serif">Helping people see the whole offer before they accept the job. Founder at perks.global. 698,572 companies, 195 benefit fields, every number sourced.</div>
+        <div class="h-idea">Leads with the decision your product improves.</div>
+        <div class="h-why"><b>Why it works</b>Names the audience and the moment perks matters, then keeps your proof numbers.</div>
+      </div>
+    </div>
+
+    <div class="hl reveal d1">
+      <div class="idx">2</div>
+      <div>
+        <div class="h-txt serif">Founder at perks.global | Everything the offer letter leaves out | Sourced data on 698,572 companies: benefits, pay, leave, visas</div>
+        <div class="h-idea">Keeps your current structure, adds the categories people search for.</div>
+        <div class="h-why"><b>Why it works</b>Stays closest to what already works, while making the coverage concrete.</div>
+      </div>
+    </div>
+
+    <div class="hl reco reveal d2">
+      <div class="idx">3</div>
+      <div>
+        <div class="reco-badge">Recommended</div>
+        <div class="h-txt serif">I build things that are missing. Currently perks.global: what 698,572 companies actually offer their people. Before: 13 years in product, 3 in finance.</div>
+        <div class="h-idea">Turns your own summary line into the positioning.</div>
+        <div class="h-why"><b>Why it works</b>Unifies perks, Agentic Diaries, and BASE64 under one sentence, and adds the credibility your history gives you.</div>
+      </div>
+    </div>
+
+    <div class="hl reveal d3">
+      <div class="idx">4</div>
+      <div>
+        <div class="h-txt serif">Founder at perks.global and Agentic Diaries. Measuring what companies offer people, and what AI knows but does not say.</div>
+        <div class="h-idea">Presents both ventures as one research agenda.</div>
+        <div class="h-why"><b>Why it works</b>Connects the dots between your two current projects instead of leaving them side by side.</div>
+      </div>
+    </div>
+
+    <div class="hl reveal d4">
+      <div class="idx">5</div>
+      <div>
+        <div class="h-txt serif">Turning government filings and company policies into answers job seekers can actually use. Founder at perks.global.</div>
+        <div class="h-idea">Leads with the mechanism that makes perks different.</div>
+        <div class="h-why"><b>Why it works</b>Sourced registries are your moat. This headline makes that the differentiator.</div>
+      </div>
+    </div>
+
+    <div class="copybox reveal">
+      <div class="copyhead">
+        <span class="lbl">Option 3, ready to paste</span>
+        <button class="copybtn" data-key="headline">Copy headline</button>
+      </div>
+      <div class="inner" id="hl-copy" style="margin-top:14px;"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ ABOUT ============ -->
+<section id="about">
+  <div class="wrap">
+    <div class="eyebrow reveal">Your new About</div>
+    <h2 class="reveal">The story first, the numbers second</h2>
+    <p class="sub reveal d1">Your current About is dense and honest, but it opens with logistics instead of the story only you can tell. The rewrite keeps every fact and changes the order.</p>
+    <div class="pill-note reveal d2">What changed: your origin story opens the section, the perks numbers follow as proof, Agentic Diaries and BASE64 appear as context, and it ends with one clear next step.</div>
+    <div class="copybox reveal d2">
+      <div class="copyhead">
+        <span class="lbl">Complete replacement About</span>
+        <button class="copybtn" data-key="about">Copy About</button>
+      </div>
+      <div class="inner" id="about-copy" style="margin-top:16px;"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ CONTENT ============ -->
+<section id="content" style="background:#FFF;">
+  <div class="wrap">
+    <div class="eyebrow reveal">Your content opportunity</div>
+    <h2 class="reveal">You already have the material. Five territories worth owning.</h2>
+    <div class="themes reveal d1">
+      <div class="theme"><b>The transparency gap</b><span>What companies never publish</span></div>
+      <div class="theme"><b>The hourly threshold</b><span>Benefits that exist but cannot be qualified for</span></div>
+      <div class="theme"><b>Building with agents</b><span>1,089 to 626,000 in two weeks, done solo</span></div>
+      <div class="theme"><b>What AI does not say</b><span>Agentic Diaries findings</span></div>
+      <div class="theme"><b>The founder story</b><span>Thirteen years ago, the job with no HR</span></div>
+    </div>
+    <p class="sub reveal d2" style="margin-top:34px;">One complete first post, written for you. It uses only facts already public in your own posts.</p>
+    <div class="post-card reveal d3">
+      <div class="copyhead">
+        <span class="lbl">Your first post, ready to publish</span>
+        <button class="copybtn" data-key="post">Copy post</button>
+      </div>
+      <div class="post-body" id="post-copy" style="margin-top:20px;"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ BANNER ============ -->
+<section id="banner">
+  <div class="wrap">
+    <div class="eyebrow reveal">Your banner</div>
+    <h2 class="reveal">The largest visual on your profile says nothing yet</h2>
+    <p class="sub reveal d1">Your banner currently carries no message. That is free advertising space sitting empty. The concept: one sentence, one number, one promise.</p>
+    <div class="banner-mock reveal d2">
+      <div>
+        <div class="bm-kicker">perks.global</div>
+        <div class="bm-main">Everything the offer letter <em>leaves out.</em></div>
+        <div class="bm-sub">698,572 companies. 195 benefit fields. Every number linked to its source.</div>
+      </div>
+    </div>
+    <div class="copybox reveal d3">
+      <div class="copyhead">
+        <span class="lbl">Banner copy</span>
+        <button class="copybtn" data-key="banner">Copy banner copy</button>
+      </div>
+      <div class="inner" id="banner-copy" style="margin-top:14px;"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ GIFT ============ -->
+<section id="gift" style="background:#FFF;">
+  <div class="wrap">
+    <div class="eyebrow reveal">Your free gift</div>
+    <h2 class="reveal">Everything on this page is yours to use</h2>
+    <p class="sub reveal d1">No strings attached. Take any of it, paste it, publish it.</p>
+    <div class="gift reveal d2">
+      <div class="g"><div class="tick">✓</div><b>Five headline options</b><span>One recommended direction, all paste-ready</span></div>
+      <div class="g"><div class="tick">✓</div><b>A complete new About</b><span>Your story first, your numbers as proof</span></div>
+      <div class="g"><div class="tick">✓</div><b>One finished LinkedIn post</b><span>Built on your own public data</span></div>
+      <div class="g"><div class="tick">✓</div><b>Positioning diagnosis</b><span>The three gaps, in plain language</span></div>
+      <div class="g"><div class="tick">✓</div><b>Banner concept and copy</b><span>Ready to be designed</span></div>
+      <div class="g"><div class="tick">✓</div><b>Content territories</b><span>Five themes you can own</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ CTA ============ -->
+<section id="cta">
+  <div class="wrap">
+    <div class="eyebrow reveal" style="color:#F076A8;">One last thing</div>
+    <h2 class="reveal">Let me finish the banner properly</h2>
+    <p class="sub reveal d1">I was already working on the banner so this gift is complete. The only thing I do not want to guess is your visual preference.</p>
+    <div class="cta-card reveal d2">
+      <div class="cta-q">Do you already have <em>brand colors</em> you want me to use?</div>
+      <div style="color:#B9AEA2;font-size:15px;margin-top:16px;">If yes, send them over. If not, just tell me: light or dark, or any colors you personally like.</div>
+      <div class="cta-opts">
+        <span>Send my brand colors</span>
+        <span>Light</span>
+        <span>Dark</span>
+        <span>Surprise me</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <h4>Sources used for this review</h4>
+    <div class="src">
+      <a href="#">Your LinkedIn profile and 14 recent posts, supplied as PDF</a>
+      <a href="https://kandistagliabue.com">kandistagliabue.com, personal site</a>
+      <a href="https://www.linkedin.com/in/kandistagliabue">linkedin.com/in/kandistagliabue, public profile</a>
+      <a href="https://www.f6s.com/company/perks.global">f6s.com/company/perks.global, company listing</a>
+    </div>
+    <div class="foot-note">
+      Why I made this: I keep seeing founders with strong products, real proof, and stories worth telling, whose profiles do not show any of it clearly. I have made the same mistakes myself. Going through my network, I picked one profile and built this review around it. Yours was the one.
+    </div>
+  </div>
+</footer>
+
+<script>
+var COPY = {
+  headline: "I build things that are missing. Currently perks.global: what 698,572 companies actually offer their people. Before: 13 years in product, 3 in finance.",
+  about: [
+"Most companies will tell you their mission statement before they tell you their parental leave policy.",
+"",
+"I learned that the hard way. Thirteen years ago I accepted a job that looked great on paper. Then I got pregnant. There was no HR department, and I was told I could use two weeks of my own vacation to recover after giving birth. None of that was visible when I signed.",
+"",
+"That is why I built perks.",
+"",
+"perks is a sourced, global database of what companies actually offer the people who work for them. 698,572 employers. 195 benefit fields. Millions of documented facts across benefits, compensation, immigration, leave, and work. Every number links back to its original source: a company policy, a government filing, USCIS data, or a clearly labeled employee report.",
+"",
+"What we have found so far:",
+"",
+"Only 218 of 698,572 companies publish a parental leave number.",
+"IVF coverage among large employers more than doubled in five years. Some companies now put $50,000 behind it.",
+"For hourly workers, the real question is not whether a benefit exists. It is whether you can ever qualify for it.",
+"",
+"This is not scraped data. It is pulled from around 20 national registries, with ingestion pipelines, entity resolution, and provenance on every record. We went from 1,089 companies to 626,000 in two weeks, building with agents.",
+"",
+"I also run Agentic Diaries, a research project measuring what AI systems register but do not surface, and I co-run BASE64, an AI native studio in Dubai.",
+"",
+"My background is product, engineering, and finance: 13 years running an independent product consultancy in the San Francisco Bay Area, three years as a financial advisor at Merrill Lynch, and an MSc in Computer Science at Heriot-Watt University, approached with one foot in philosophy.",
+"",
+"You should not have to accept a job before finding out what the job comes with.",
+"",
+"Look up your next offer: perks.global"
+  ].join("\n"),
+  post: [
+"218 out of 698,572.",
+"",
+"That is how many companies publish their parental leave policy as an actual number.",
+"",
+"We ranked all 218 this week. A few findings:",
+"",
+"Atlassian, Spotify, Zuora, Docusign, Mozilla: 26 weeks",
+"OpenAI: 24 weeks",
+"Anthropic: 22 weeks",
+"Walmart: 22 weeks (this surprised us more than anything else on the list)",
+"",
+"Two things worth saying out loud.",
+"",
+"First, 218 is not how many companies offer leave. It is how many publish a number. The policies exist. The disclosure does not.",
+"",
+"Second, 200 of the 218 are American. That is not where the best policies are. That is where the disclosure laws are.",
+"",
+"We built perks to close this gap: 698,572 companies, 195 benefit fields, every number linked to a filing or a policy.",
+"",
+"The full list is free. Link in the comments.",
+"",
+"What is the one benefit you wish you had known before you accepted a job?"
+  ].join("\n"),
+  banner: "Everything the offer letter leaves out.\n698,572 companies. 195 benefit fields. Every number linked to its source.\nperks.global"
+};
+
+document.getElementById('hl-copy').textContent = COPY.headline;
+document.getElementById('about-copy').textContent = COPY.about;
+document.getElementById('post-copy').textContent = COPY.post;
+document.getElementById('banner-copy').textContent = COPY.banner;
+
+document.querySelectorAll('.copybtn').forEach(function(btn){
+  btn.addEventListener('click', function(){
+    var key = btn.getAttribute('data-key');
+    var text = COPY[key] || '';
+    function done(){
+      var original = btn.textContent;
+      btn.textContent = 'Copied ✓';
+      btn.classList.add('done');
+      setTimeout(function(){
+        btn.textContent = original;
+        btn.classList.remove('done');
+      }, 1800);
+    }
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(done).catch(function(){ fallback(); });
+    } else { fallback(); }
+    function fallback(){
+      var ta = document.createElement('textarea');
+      ta.value = text;
+      ta.style.position = 'fixed';
+      ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.select();
+      try { document.execCommand('copy'); } catch(e) {}
+      document.body.removeChild(ta);
+      done();
+    }
+  });
+});
+
+var io = new IntersectionObserver(function(entries){
+  entries.forEach(function(e){
+    if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); }
+  });
+}, {threshold: 0.12});
+document.querySelectorAll('.reveal').forEach(function(el){ io.observe(el); });
+
+window.addEventListener('scroll', function(){
+  var h = document.documentElement;
+  var pct = (h.scrollTop) / (h.scrollHeight - h.clientHeight) * 100;
+  document.getElementById('progress').style.width = pct + '%';
+});
+</script>
+</body>
+</html>
